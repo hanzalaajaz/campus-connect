@@ -9,7 +9,8 @@ import '../utils/app_constants.dart';
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  AuthService? _authServiceInstance;
+  AuthService get _authService => _authServiceInstance ??= AuthService();
 
   AuthStatus _status = AuthStatus.initial;
   UserModel? _user;
