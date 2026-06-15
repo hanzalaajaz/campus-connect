@@ -48,83 +48,124 @@ class AnnouncementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: announcement.isPinned
-            ? Border.all(color: AppColors.accent.withOpacity(0.4), width: 1.5)
-            : null,
+            ? Border.all(color: AppColors.accent.withOpacity(0.5), width: 1.5)
+            : Border.all(color: Colors.grey.shade100, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: _typeColor.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(_typeIcon, color: _typeColor, size: 22),
-        ),
-        title: Row(
-          children: [
-            if (announcement.isPinned) ...[
-              const Icon(Icons.push_pin, size: 14, color: AppColors.accent),
-              const SizedBox(width: 4),
-            ],
-            Expanded(
-              child: Text(
-                announcement.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColors.textPrimary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        subtitle: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: _typeColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(_typeIcon, color: _typeColor, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            announcement.createdByName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          _buildBadge(),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        DateFormat('MMM d, yyyy • h:mm a').format(announcement.createdAt),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (announcement.isPinned)
+                  const Tooltip(
+                    message: 'Pinned',
+                    child: Icon(Icons.push_pin, size: 16, color: AppColors.accent),
+                  ),
+                if (showDelete) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+                    onPressed: onDelete,
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              announcement.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 8),
             Text(
               announcement.message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${announcement.createdByName} • ${DateFormat('MMM d, h:mm a').format(announcement.createdAt)}',
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.textHint,
+                color: Colors.grey.shade700,
+                height: 1.5,
               ),
             ),
           ],
         ),
-        trailing: showDelete
-            ? IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                onPressed: onDelete,
-              )
-            : null,
+      ),
+    );
+  }
+
+  Widget _buildBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: _typeColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        announcement.type.toUpperCase(),
+        style: TextStyle(
+          color: _typeColor,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }

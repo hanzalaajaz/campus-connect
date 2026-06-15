@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
 import 'providers/trip_provider.dart';
 import 'providers/donation_provider.dart';
+import 'providers/announcement_provider.dart';
 import 'services/notification_service.dart';
 import 'services/mock_database.dart';
 import 'utils/app_routes.dart';
@@ -23,10 +24,12 @@ void main() async {
       await NotificationService.instance.initialize();
     } catch (e) {
       debugPrint("Firebase initialization failed, falling back to demo: $e");
+      AppConstants.isDemoMode = true;
       MockDatabase.instance.initStreams();
     }
   } else {
     debugPrint("Running in DEMO MODE (Local)");
+    await MockDatabase.instance.init();
     MockDatabase.instance.initStreams();
   }
 
@@ -44,6 +47,7 @@ class CampusConnectApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => TripProvider()),
         ChangeNotifierProvider(create: (_) => DonationProvider()),
+        ChangeNotifierProvider(create: (_) => AnnouncementProvider()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

@@ -24,9 +24,12 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider() {
     if (AppConstants.isDemoMode) {
       _status = AuthStatus.unauthenticated;
+      notifyListeners();
       MockDatabase.instance.authStateChanges.listen((mockUser) {
         _user = mockUser;
-        _status = mockUser != null ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+        _status = mockUser != null
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated;
         notifyListeners();
       });
     } else {
@@ -64,6 +67,7 @@ class AuthProvider extends ChangeNotifier {
     required String name,
     required String department,
     required String semester,
+    String role = 'student',
   }) async {
     _setLoading();
     try {
@@ -74,6 +78,7 @@ class AuthProvider extends ChangeNotifier {
           name: name,
           department: department,
           semester: semester,
+          role: role,
         );
       } else {
         _user = await _authService.signUpWithEmail(
@@ -82,6 +87,7 @@ class AuthProvider extends ChangeNotifier {
           name: name,
           department: department,
           semester: semester,
+          role: role,
         );
       }
       _status = AuthStatus.authenticated;

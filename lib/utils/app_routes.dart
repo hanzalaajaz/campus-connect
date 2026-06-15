@@ -13,6 +13,7 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/add_event_screen.dart';
 import '../screens/admin/add_trip_screen.dart';
+import '../screens/admin/add_campaign_screen.dart';
 import '../models/event_model.dart';
 import '../models/trip_model.dart';
 
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String adminDashboard = '/admin-dashboard';
   static const String addEvent = '/add-event';
   static const String addTrip = '/add-trip';
+  static const String addCampaign = '/add-campaign';
 
   static Map<String, WidgetBuilder> get routes => {
     splash: (_) => const SplashScreen(),
@@ -45,6 +47,7 @@ class AppRoutes {
     adminDashboard: (_) => const AdminDashboard(),
     addEvent: (_) => const AddEventScreen(),
     addTrip: (_) => const AddTripScreen(),
+    addCampaign: (_) => const AddCampaignScreen(),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {

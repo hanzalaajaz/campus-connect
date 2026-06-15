@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/event_model.dart';
+import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_routes.dart';
 
@@ -122,32 +124,33 @@ class EventCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: event.isFull ? null : onRegister,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isRegistered
-                            ? Colors.grey.shade200
-                            : AppColors.primary,
-                        foregroundColor:
-                            isRegistered ? AppColors.textSecondary : Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  if (context.watch<AuthProvider>().user?.isAdmin != true)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: event.isFull ? null : onRegister,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isRegistered
+                              ? Colors.grey.shade200
+                              : AppColors.primary,
+                          foregroundColor:
+                              isRegistered ? AppColors.textSecondary : Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      child: Text(
-                        event.isFull
-                            ? 'Event Full'
-                            : isRegistered
-                                ? 'Registered ✓'
-                                : 'Register Now',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        child: Text(
+                          event.isFull
+                              ? 'Event Full'
+                              : isRegistered
+                                  ? 'Registered ✓'
+                                  : 'Register Now',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

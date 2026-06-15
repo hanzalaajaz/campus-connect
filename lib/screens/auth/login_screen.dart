@@ -34,7 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordCtrl.text,
     );
     if (success && mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      if (provider.isAdmin) {
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     }
   }
 
@@ -42,7 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final provider = context.read<AuthProvider>();
     final success = await provider.signInWithGoogle();
     if (success && mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      if (provider.isAdmin) {
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     }
   }
 

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../models/event_model.dart';
 import '../models/trip_model.dart';
@@ -215,6 +217,290 @@ class MockDatabase {
     _announcementsController.add(List.unmodifiable(_announcements));
   }
 
+  // ─── LOCAL STORAGE SERIALIZATION HELPER METHODS ──────────────────────────
+  Map<String, dynamic> _userToMap(UserModel u) {
+    return {
+      'uid': u.uid,
+      'name': u.name,
+      'email': u.email,
+      'department': u.department,
+      'semester': u.semester,
+      'role': u.role,
+      'photoUrl': u.photoUrl,
+      'fcmToken': u.fcmToken,
+      'registeredEvents': u.registeredEvents,
+      'registeredTrips': u.registeredTrips,
+      'createdAt': u.createdAt.toIso8601String(),
+    };
+  }
+
+  UserModel _userFromMap(Map<String, dynamic> map) {
+    return UserModel(
+      uid: map['uid'],
+      name: map['name'],
+      email: map['email'],
+      department: map['department'],
+      semester: map['semester'],
+      role: map['role'],
+      photoUrl: map['photoUrl'],
+      fcmToken: map['fcmToken'],
+      registeredEvents: List<String>.from(map['registeredEvents'] ?? []),
+      registeredTrips: List<String>.from(map['registeredTrips'] ?? []),
+      createdAt: DateTime.parse(map['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> _eventToMap(EventModel e) {
+    return {
+      'id': e.id,
+      'title': e.title,
+      'description': e.description,
+      'venue': e.venue,
+      'date': e.date.toIso8601String(),
+      'time': e.time,
+      'category': e.category,
+      'imageUrl': e.imageUrl,
+      'latitude': e.latitude,
+      'longitude': e.longitude,
+      'maxParticipants': e.maxParticipants,
+      'registeredCount': e.registeredCount,
+      'isActive': e.isActive,
+      'createdBy': e.createdBy,
+      'createdAt': e.createdAt.toIso8601String(),
+    };
+  }
+
+  EventModel _eventFromMap(Map<String, dynamic> map) {
+    return EventModel(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      venue: map['venue'],
+      date: DateTime.parse(map['date']),
+      time: map['time'],
+      category: map['category'],
+      imageUrl: map['imageUrl'],
+      latitude: map['latitude']?.toDouble(),
+      longitude: map['longitude']?.toDouble(),
+      maxParticipants: map['maxParticipants'],
+      registeredCount: map['registeredCount'] ?? 0,
+      isActive: map['isActive'] ?? true,
+      createdBy: map['createdBy'],
+      createdAt: DateTime.parse(map['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> _tripToMap(TripModel t) {
+    return {
+      'id': t.id,
+      'title': t.title,
+      'description': t.description,
+      'destination': t.destination,
+      'departureDate': t.departureDate.toIso8601String(),
+      'returnDate': t.returnDate.toIso8601String(),
+      'price': t.price,
+      'totalSeats': t.totalSeats,
+      'bookedSeats': t.bookedSeats,
+      'registrationDeadline': t.registrationDeadline.toIso8601String(),
+      'imageUrl': t.imageUrl,
+      'latitude': t.latitude,
+      'longitude': t.longitude,
+      'itinerary': t.itinerary,
+      'isActive': t.isActive,
+      'createdBy': t.createdBy,
+      'createdAt': t.createdAt.toIso8601String(),
+    };
+  }
+
+  TripModel _tripFromMap(Map<String, dynamic> map) {
+    return TripModel(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      destination: map['destination'],
+      departureDate: DateTime.parse(map['departureDate']),
+      returnDate: DateTime.parse(map['returnDate']),
+      price: map['price']?.toDouble() ?? 0.0,
+      totalSeats: map['totalSeats'] ?? 0,
+      bookedSeats: map['bookedSeats'] ?? 0,
+      registrationDeadline: DateTime.parse(map['registrationDeadline']),
+      imageUrl: map['imageUrl'],
+      latitude: map['latitude']?.toDouble(),
+      longitude: map['longitude']?.toDouble(),
+      itinerary: List<String>.from(map['itinerary'] ?? []),
+      isActive: map['isActive'] ?? true,
+      createdBy: map['createdBy'],
+      createdAt: DateTime.parse(map['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> _donationToMap(DonationCampaignModel c) {
+    return {
+      'id': c.id,
+      'title': c.title,
+      'description': c.description,
+      'category': c.category,
+      'goalAmount': c.goalAmount,
+      'raisedAmount': c.raisedAmount,
+      'imageUrl': c.imageUrl,
+      'endDate': c.endDate.toIso8601String(),
+      'isActive': c.isActive,
+      'createdBy': c.createdBy,
+      'createdAt': c.createdAt.toIso8601String(),
+    };
+  }
+
+  DonationCampaignModel _donationFromMap(Map<String, dynamic> map) {
+    return DonationCampaignModel(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      category: map['category'],
+      goalAmount: map['goalAmount']?.toDouble() ?? 0.0,
+      raisedAmount: map['raisedAmount']?.toDouble() ?? 0.0,
+      imageUrl: map['imageUrl'],
+      endDate: DateTime.parse(map['endDate']),
+      isActive: map['isActive'] ?? true,
+      createdBy: map['createdBy'],
+      createdAt: DateTime.parse(map['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> _announcementToMap(AnnouncementModel a) {
+    return {
+      'id': a.id,
+      'title': a.title,
+      'message': a.message,
+      'type': a.type,
+      'imageUrl': a.imageUrl,
+      'isPinned': a.isPinned,
+      'createdBy': a.createdBy,
+      'createdByName': a.createdByName,
+      'createdAt': a.createdAt.toIso8601String(),
+    };
+  }
+
+  AnnouncementModel _announcementFromMap(Map<String, dynamic> map) {
+    return AnnouncementModel(
+      id: map['id'],
+      title: map['title'],
+      message: map['message'],
+      type: map['type'],
+      imageUrl: map['imageUrl'],
+      isPinned: map['isPinned'] ?? false,
+      createdBy: map['createdBy'],
+      createdByName: map['createdByName'],
+      createdAt: DateTime.parse(map['createdAt']),
+    );
+  }
+
+  Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Load Users
+      final usersJson = prefs.getString('mock_users');
+      if (usersJson != null) {
+        final list = json.decode(usersJson) as List;
+        _users.clear();
+        _users.addAll(list.map((item) => _userFromMap(item)).toList());
+      } else {
+        await _saveUsers(prefs);
+      }
+
+      // Load current user session
+      final currentUserId = prefs.getString('mock_current_user_id');
+      if (currentUserId != null) {
+        final matches = _users.where((u) => u.uid == currentUserId);
+        if (matches.isNotEmpty) {
+          _currentUser = matches.first;
+          _authStreamController.add(_currentUser);
+        }
+      }
+
+      // Load Events
+      final eventsJson = prefs.getString('mock_events');
+      if (eventsJson != null) {
+        final list = json.decode(eventsJson) as List;
+        _events.clear();
+        _events.addAll(list.map((item) => _eventFromMap(item)).toList());
+      } else {
+        await _saveEvents(prefs);
+      }
+
+      // Load Trips
+      final tripsJson = prefs.getString('mock_trips');
+      if (tripsJson != null) {
+        final list = json.decode(tripsJson) as List;
+        _trips.clear();
+        _trips.addAll(list.map((item) => _tripFromMap(item)).toList());
+      } else {
+        await _saveTrips(prefs);
+      }
+
+      // Load Donations
+      final donationsJson = prefs.getString('mock_donations');
+      if (donationsJson != null) {
+        final list = json.decode(donationsJson) as List;
+        _donations.clear();
+        _donations.addAll(list.map((item) => _donationFromMap(item)).toList());
+      } else {
+        await _saveDonations(prefs);
+      }
+
+      // Load Announcements
+      final announcementsJson = prefs.getString('mock_announcements');
+      if (announcementsJson != null) {
+        final list = json.decode(announcementsJson) as List;
+        _announcements.clear();
+        _announcements.addAll(list.map((item) => _announcementFromMap(item)).toList());
+      } else {
+        await _saveAnnouncements(prefs);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<void> _save() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await _saveUsers(prefs);
+      await _saveEvents(prefs);
+      await _saveTrips(prefs);
+      await _saveDonations(prefs);
+      await _saveAnnouncements(prefs);
+
+      if (_currentUser != null) {
+        await prefs.setString('mock_current_user_id', _currentUser!.uid);
+      } else {
+        await prefs.remove('mock_current_user_id');
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<void> _saveUsers(SharedPreferences prefs) async {
+    await prefs.setString('mock_users', json.encode(_users.map((u) => _userToMap(u)).toList()));
+  }
+
+  Future<void> _saveEvents(SharedPreferences prefs) async {
+    await prefs.setString('mock_events', json.encode(_events.map((e) => _eventToMap(e)).toList()));
+  }
+
+  Future<void> _saveTrips(SharedPreferences prefs) async {
+    await prefs.setString('mock_trips', json.encode(_trips.map((t) => _tripToMap(t)).toList()));
+  }
+
+  Future<void> _saveDonations(SharedPreferences prefs) async {
+    await prefs.setString('mock_donations', json.encode(_donations.map((d) => _donationToMap(d)).toList()));
+  }
+
+  Future<void> _saveAnnouncements(SharedPreferences prefs) async {
+    await prefs.setString('mock_announcements', json.encode(_announcements.map((a) => _announcementToMap(a)).toList()));
+  }
+
   // ─── AUTHENTICATION METHODS ────────────────────────────────────────────────
   Future<UserModel?> signUpWithEmail({
     required String email,
@@ -222,6 +508,7 @@ class MockDatabase {
     required String name,
     required String department,
     required String semester,
+    String role = 'student',
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
@@ -236,13 +523,14 @@ class MockDatabase {
       email: email,
       department: department,
       semester: semester,
-      role: 'student',
+      role: role,
       createdAt: DateTime.now(),
     );
 
     _users.add(newUser);
     _currentUser = newUser;
     _authStreamController.add(_currentUser);
+    await _save();
     return newUser;
   }
 
@@ -264,6 +552,7 @@ class MockDatabase {
 
     _currentUser = user;
     _authStreamController.add(_currentUser);
+    await _save();
     return _currentUser;
   }
 
@@ -282,10 +571,12 @@ class MockDatabase {
 
     if (!_users.any((u) => u.uid == googleUser.uid)) {
       _users.add(googleUser);
+      await _save();
     }
 
     _currentUser = googleUser;
     _authStreamController.add(_currentUser);
+    await _save();
     return googleUser;
   }
 
@@ -301,12 +592,14 @@ class MockDatabase {
         _currentUser = user;
         _authStreamController.add(_currentUser);
       }
+      await _save();
     }
   }
 
   Future<void> signOut() async {
     _currentUser = null;
     _authStreamController.add(null);
+    await _save();
   }
 
   // ─── EVENTS METHODS ────────────────────────────────────────────────────────
@@ -337,6 +630,7 @@ class MockDatabase {
 
     _events.add(newEvent);
     _eventsController.add(List.unmodifiable(_events));
+    await _save();
     return newEvent.id;
   }
 
@@ -345,12 +639,14 @@ class MockDatabase {
     if (idx != -1) {
       _events[idx] = event;
       _eventsController.add(List.unmodifiable(_events));
+      await _save();
     }
   }
 
   Future<void> deleteEvent(String eventId) async {
     _events.removeWhere((e) => e.id == eventId);
     _eventsController.add(List.unmodifiable(_events));
+    await _save();
   }
 
   Future<void> registerForEvent(String eventId, String userId) async {
@@ -364,7 +660,7 @@ class MockDatabase {
       if (!user.registeredEvents.contains(eventId)) {
         final newRegEvents = List<String>.from(user.registeredEvents)..add(eventId);
         _users[userIdx] = user.copyWith(registeredEvents: newRegEvents);
-        
+
         _events[eventIdx] = EventModel(
           id: event.id,
           title: event.title,
@@ -389,6 +685,7 @@ class MockDatabase {
         }
 
         _eventsController.add(List.unmodifiable(_events));
+        await _save();
       }
     }
   }
@@ -429,6 +726,7 @@ class MockDatabase {
         }
 
         _eventsController.add(List.unmodifiable(_events));
+        await _save();
       }
     }
   }
@@ -463,6 +761,7 @@ class MockDatabase {
 
     _trips.add(newTrip);
     _tripsController.add(List.unmodifiable(_trips));
+    await _save();
     return newTrip.id;
   }
 
@@ -471,12 +770,14 @@ class MockDatabase {
     if (idx != -1) {
       _trips[idx] = trip;
       _tripsController.add(List.unmodifiable(_trips));
+      await _save();
     }
   }
 
   Future<void> deleteTrip(String tripId) async {
     _trips.removeWhere((t) => t.id == tripId);
     _tripsController.add(List.unmodifiable(_trips));
+    await _save();
   }
 
   Future<void> registerForTrip(String tripId, String userId) async {
@@ -517,6 +818,7 @@ class MockDatabase {
         }
 
         _tripsController.add(List.unmodifiable(_trips));
+        await _save();
       }
     }
   }
@@ -559,6 +861,7 @@ class MockDatabase {
         }
 
         _tripsController.add(List.unmodifiable(_trips));
+        await _save();
       }
     }
   }
@@ -587,6 +890,7 @@ class MockDatabase {
 
     _donations.add(newCampaign);
     _donationsController.add(List.unmodifiable(_donations));
+    await _save();
     return newCampaign.id;
   }
 
@@ -609,6 +913,7 @@ class MockDatabase {
         createdAt: campaign.createdAt,
       );
       _donationsController.add(List.unmodifiable(_donations));
+      await _save();
     }
   }
 
@@ -634,11 +939,43 @@ class MockDatabase {
 
     _announcements.add(newAnn);
     _announcementsController.add(List.unmodifiable(_announcements));
+    await _save();
     return newAnn.id;
   }
 
   Future<void> deleteAnnouncement(String id) async {
     _announcements.removeWhere((ann) => ann.id == id);
     _announcementsController.add(List.unmodifiable(_announcements));
+    await _save();
+  }
+
+  Future<void> updateDonationCampaign(DonationCampaignModel campaign) async {
+    final idx = _donations.indexWhere((c) => c.id == campaign.id);
+    if (idx != -1) {
+      _donations[idx] = campaign;
+      _donationsController.add(List.unmodifiable(_donations));
+      await _save();
+    }
+  }
+
+  Future<void> deleteDonationCampaign(String id) async {
+    final idx = _donations.indexWhere((c) => c.id == id);
+    if (idx != -1) {
+      _donations[idx] = DonationCampaignModel(
+        id: _donations[idx].id,
+        title: _donations[idx].title,
+        description: _donations[idx].description,
+        category: _donations[idx].category,
+        goalAmount: _donations[idx].goalAmount,
+        raisedAmount: _donations[idx].raisedAmount,
+        imageUrl: _donations[idx].imageUrl,
+        endDate: _donations[idx].endDate,
+        isActive: false,
+        createdBy: _donations[idx].createdBy,
+        createdAt: _donations[idx].createdAt,
+      );
+      _donationsController.add(List.unmodifiable(_donations));
+      await _save();
+    }
   }
 }

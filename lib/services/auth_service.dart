@@ -5,8 +5,8 @@ import '../models/user_model.dart';
 import '../utils/app_constants.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? get currentUser => _auth.currentUser;
@@ -18,6 +18,7 @@ class AuthService {
     required String name,
     required String department,
     required String semester,
+    String role = AppConstants.roleStudent,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -31,7 +32,7 @@ class AuthService {
       email: email,
       department: department,
       semester: semester,
-      role: AppConstants.roleStudent,
+      role: role,
       createdAt: DateTime.now(),
     );
 

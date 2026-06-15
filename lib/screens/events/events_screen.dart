@@ -4,6 +4,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/event_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
+import '../../utils/app_routes.dart';
 import '../../widgets/event_card.dart';
 import '../../widgets/loading_widget.dart';
 
@@ -12,6 +13,8 @@ class EventsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -25,6 +28,13 @@ class EventsScreen extends StatelessWidget {
           child: Divider(color: Colors.grey.shade100, height: 1),
         ),
       ),
+      floatingActionButton: authProvider.isAdmin
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.addEvent),
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       body: Column(
         children: [
           _SearchAndFilter(),
@@ -60,7 +70,7 @@ class _SearchAndFilter extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 32,
+            height: 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: ['All', ...AppConstants.eventCategories]
@@ -83,6 +93,8 @@ class _SearchAndFilter extends StatelessWidget {
                           ),
                           backgroundColor: AppColors.background,
                           side: BorderSide.none,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
                         ),
                       ))
                   .toList(),
@@ -112,7 +124,7 @@ class _EventList extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       itemCount: events.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, i) {

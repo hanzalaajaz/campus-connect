@@ -21,6 +21,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmPasswordCtrl = TextEditingController();
   String? _selectedDepartment;
   String? _selectedSemester;
+  String _selectedRole = 'student';
   bool _obscurePassword = true;
 
   @override
@@ -34,7 +35,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedDepartment == null || _selectedSemester == null) {
+    if (_selectedRole == 'student' &&
+        (_selectedDepartment == null || _selectedSemester == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select department and semester')),
       );
@@ -45,11 +47,16 @@ class _SignupScreenState extends State<SignupScreen> {
       email: _emailCtrl.text.trim(),
       password: _passwordCtrl.text,
       name: _nameCtrl.text.trim(),
-      department: _selectedDepartment!,
-      semester: _selectedSemester!,
+      department: _selectedRole == 'admin' ? '' : _selectedDepartment!,
+      semester: _selectedRole == 'admin' ? '' : _selectedSemester!,
+      role: _selectedRole,
     );
     if (success && mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      if (provider.isAdmin) {
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     }
   }
 
@@ -154,23 +161,34 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           const SizedBox(height: 14),
                           _buildDropdown(
-                            label: 'Department',
-                            hint: 'Select your department',
-                            value: _selectedDepartment,
-                            items: AppConstants.departments,
+                            label: 'Account Type (Role)',
+                            hint: 'Select account type',
+                            value: _selectedRole,
+                            items: const ['student', 'admin'],
                             onChanged: (v) =>
-                                setState(() => _selectedDepartment = v),
+                                setState(() => _selectedRole = v ?? 'student'),
                           ),
                           const SizedBox(height: 14),
-                          _buildDropdown(
-                            label: 'Semester',
-                            hint: 'Select semester',
-                            value: _selectedSemester,
-                            items: AppConstants.semesters,
-                            onChanged: (v) =>
-                                setState(() => _selectedSemester = v),
-                          ),
-                          const SizedBox(height: 14),
+                          if (_selectedRole == 'student') ...[
+                            _buildDropdown(
+                              label: 'Department',
+                              hint: 'Select your department',
+                              value: _selectedDepartment,
+                              items: AppConstants.departments,
+                              onChanged: (v) =>
+                                  setState(() => _selectedDepartment = v),
+                            ),
+                            const SizedBox(height: 14),
+                            _buildDropdown(
+                              label: 'Semester',
+                              hint: 'Select semester',
+                              value: _selectedSemester,
+                              items: AppConstants.semesters,
+                              onChanged: (v) =>
+                                  setState(() => _selectedSemester = v),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
                           _buildField(
                             controller: _passwordCtrl,
                             label: 'Password',
@@ -339,7 +357,13 @@ class _SignupScreenState extends State<SignupScreen> {
           hint: Text(hint,
               style: const TextStyle(color: AppColors.textHint, fontSize: 14)),
           items: items
-              .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+              .map((d) => DropdownMenuItem(
+                  value: d,
+                  child: Text(d == 'student'
+                      ? 'Student'
+                      : d == 'admin'
+                          ? 'Admin'
+                          : d)))
               .toList(),
         ),
       ],

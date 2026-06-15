@@ -151,6 +151,15 @@ class AdminDashboard extends StatelessWidget {
               onTap: () =>
                   Navigator.pushNamed(context, AppRoutes.announcements),
             ),
+            const SizedBox(height: 8),
+            _ActionTile(
+              icon: Icons.volunteer_activism_outlined,
+              title: 'Add Donation Campaign',
+              subtitle: 'Start a new fundraiser',
+              color: AppColors.success,
+              onTap: () =>
+                  Navigator.pushNamed(context, AppRoutes.addCampaign),
+            ),
             const SizedBox(height: 24),
             const Text(
               'Manage Events',
@@ -263,6 +272,64 @@ class AdminDashboard extends StatelessWidget {
                         await context
                             .read<TripProvider>()
                             .deleteTrip(t.id);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Manage Donation Campaigns',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 10),
+            ...donationProvider.campaigns.where((c) => c.isActive).map(
+              (c) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.success,
+                    child: Icon(Icons.volunteer_activism, color: Colors.white, size: 18),
+                  ),
+                  title: Text(c.title,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  subtitle: Text('PKR ${c.raisedAmount.toStringAsFixed(0)} / ${c.goalAmount.toStringAsFixed(0)} raised'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Delete Campaign'),
+                          content: const Text(
+                              'Are you sure you want to delete this campaign?'),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel')),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.error),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        await context
+                            .read<DonationProvider>()
+                            .deleteCampaign(c.id);
                       }
                     },
                   ),

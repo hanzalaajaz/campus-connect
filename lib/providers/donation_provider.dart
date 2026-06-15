@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../models/donation_model.dart';
 import '../services/firestore_service.dart';
+import '../services/storage_service.dart';
 
 class DonationProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
+  final StorageService _storageService = StorageService();
 
   List<DonationCampaignModel> _campaigns = [];
   bool _isLoading = false;
@@ -60,12 +63,47 @@ class DonationProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> addCampaign(DonationCampaignModel campaign) async {
+  Future<bool> addCampaign({required DonationCampaignModel campaign, File? imageFile}) async {
+    _isLoading = true;
+    notifyListeners();
     try {
-      await _firestoreService.addDonationCampaign(campaign);
+      final id = await _firestoreService.addDonationCampaign(campaign);
+      if (imageFile != null) {
+        final url = await _storageService.uploadDonationImage(imageFile, id);
+        if (url != null) {
+          final updated = DonationCampaignModel(
+            id: id,
+            title: campaign.title,
+            description: campaign.description,
+            category: campaign.category,
+            goalAmount: campaign.goalAmount,
+            raisedAmount: campaign.raisedAmount,
+            imageUrl: url,
+            endDate: campaign.endDate,
+            isActive: campaign.isActive,
+            createdBy: campaign.createdBy,
+            createdAt: campaign.createdAt,
+          );
+          await _firestoreService.updateDonationCampaign(updated);
+        }
+      }
+      _isLoading = false;
+      notifyListeners();
       return true;
     } catch (_) {
+      _isLoading = false;
       _error = 'Failed to add campaign.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteCampaign(String campaignId) async {
+    try {
+      await _firestoreService.deleteDonationCampaign(campaignId);
+      return true;
+    } catch (_) {
+      _error = 'Failed to delete campaign.';
       notifyListeners();
       return false;
     }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/donation_provider.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_routes.dart';
 import '../../widgets/donation_card.dart';
 import '../../widgets/loading_widget.dart';
 
@@ -12,10 +13,18 @@ class DonationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final donationProvider = context.watch<DonationProvider>();
-    final user = context.watch<AuthProvider>().user;
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: authProvider.isAdmin
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.addCampaign),
+              backgroundColor: AppColors.success,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       appBar: AppBar(
         title: const Text('Donation Drives',
             style: TextStyle(fontWeight: FontWeight.bold)),
@@ -35,7 +44,7 @@ class DonationsScreen extends StatelessWidget {
                   icon: Icons.volunteer_activism_outlined,
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
                   itemCount: donationProvider.campaigns.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {

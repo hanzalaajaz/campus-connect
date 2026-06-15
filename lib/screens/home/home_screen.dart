@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/trip_provider.dart';
+import '../../providers/donation_provider.dart';
+import '../../providers/announcement_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../widgets/event_card.dart';
@@ -11,9 +13,6 @@ import '../events/events_screen.dart';
 import '../trips/trips_screen.dart';
 import '../donations/donations_screen.dart';
 import '../profile/profile_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../models/announcement_model.dart';
-import '../../utils/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EventProvider>().listenToEvents();
       context.read<TripProvider>().listenToTrips();
+      context.read<DonationProvider>().listenToCampaigns();
+      context.read<AnnouncementProvider>().listenToAnnouncements();
     });
   }
 
@@ -217,17 +218,9 @@ class _HomeTab extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection(AppConstants.announcementsCollection)
-                        .orderBy('createdAt', descending: true)
-                        .limit(3)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) return const SizedBox.shrink();
-                      final announcements = snapshot.data!.docs
-                          .map(AnnouncementModel.fromFirestore)
-                          .toList();
+                  Consumer<AnnouncementProvider>(
+                    builder: (context, annProvider, __) {
+                      final announcements = annProvider.recentAnnouncements;
                       if (announcements.isEmpty) {
                         return Text('No announcements yet',
                             style:

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/announcement_provider.dart';
 import '../../models/announcement_model.dart';
-import '../../services/firestore_service.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_constants.dart';
 import '../../widgets/announcement_tile.dart';
 import '../../widgets/loading_widget.dart';
 
@@ -15,6 +13,7 @@ class AnnouncementsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final annProvider = context.watch<AnnouncementProvider>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -37,62 +36,51 @@ class AnnouncementsScreen extends StatelessWidget {
               backgroundColor: AppColors.primary,
             )
           : null,
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection(AppConstants.announcementsCollection)
-            .orderBy('isPinned', descending: true)
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingWidget();
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const EmptyStateWidget(
-              message: 'No announcements yet.\nCheck back soon!',
-              icon: Icons.campaign_outlined,
-            );
-          }
-          final announcements = snapshot.data!.docs
-              .map(AnnouncementModel.fromFirestore)
-              .toList();
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: announcements.length,
-            itemBuilder: (context, i) {
-              final a = announcements[i];
-              return AnnouncementTile(
-                announcement: a,
-                showDelete: authProvider.isAdmin,
-                onDelete: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Delete Announcement'),
-                      content:
-                          const Text('Are you sure you want to delete this?'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel')),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.error),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true && context.mounted) {
-                    await FirestoreService().deleteAnnouncement(a.id);
-                  }
-                },
-              );
-            },
-          );
-        },
-      ),
+      body: annProvider.isLoading
+          ? const LoadingWidget()
+          : annProvider.announcements.isEmpty
+              ? const EmptyStateWidget(
+                  message: 'No announcements yet.\nCheck back soon!',
+                  icon: Icons.campaign_outlined,
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(
+                      left: 16, right: 16, top: 16, bottom: 96),
+                  itemCount: annProvider.announcements.length,
+                  itemBuilder: (context, i) {
+                    final a = annProvider.announcements[i];
+                    return AnnouncementTile(
+                      announcement: a,
+                      showDelete: authProvider.isAdmin,
+                      onDelete: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Announcement'),
+                            content: const Text(
+                                'Are you sure you want to delete this?'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel')),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.error),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true && context.mounted) {
+                          await context
+                              .read<AnnouncementProvider>()
+                              .deleteAnnouncement(a.id);
+                        }
+                      },
+                    );
+                  },
+                ),
     );
   }
 
@@ -194,7 +182,9 @@ class AnnouncementsScreen extends StatelessWidget {
                         createdAt: DateTime.now(),
                       );
                       Navigator.pop(ctx);
-                      await FirestoreService().addAnnouncement(announcement);
+                      await context
+                          .read<AnnouncementProvider>()
+                          .addAnnouncement(announcement);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

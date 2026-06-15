@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_routes.dart';
 import '../../widgets/trip_card.dart';
 import '../../widgets/loading_widget.dart';
 
@@ -17,6 +18,13 @@ class TripsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: authProvider.isAdmin
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.addTrip),
+              backgroundColor: AppColors.accent,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       appBar: AppBar(
         title: const Text('Trips',
             style: TextStyle(fontWeight: FontWeight.bold)),
@@ -36,7 +44,7 @@ class TripsScreen extends StatelessWidget {
                   icon: Icons.directions_bus_outlined,
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
                   itemCount: tripProvider.trips.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {

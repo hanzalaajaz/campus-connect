@@ -7,7 +7,7 @@ import '../utils/app_constants.dart';
 import 'mock_database.dart';
 
 class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   // ─── EVENTS ─────────────────────────────────────────────────────────────────
 
@@ -247,5 +247,37 @@ class FirestoreService {
         .collection(AppConstants.announcementsCollection)
         .doc(id)
         .delete();
+  }
+
+  Stream<List<AnnouncementModel>> getRecentAnnouncements({int limit = 3}) {
+    if (AppConstants.isDemoMode) {
+      return getAnnouncements().map((list) => list.take(limit).toList());
+    }
+    return _db
+        .collection(AppConstants.announcementsCollection)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((s) => s.docs.map(AnnouncementModel.fromFirestore).toList());
+  }
+
+  Future<void> updateDonationCampaign(DonationCampaignModel campaign) async {
+    if (AppConstants.isDemoMode) {
+      return MockDatabase.instance.updateDonationCampaign(campaign);
+    }
+    await _db
+        .collection(AppConstants.donationsCollection)
+        .doc(campaign.id)
+        .update(campaign.toMap());
+  }
+
+  Future<void> deleteDonationCampaign(String id) async {
+    if (AppConstants.isDemoMode) {
+      return MockDatabase.instance.deleteDonationCampaign(id);
+    }
+    await _db
+        .collection(AppConstants.donationsCollection)
+        .doc(id)
+        .update({'isActive': false});
   }
 }

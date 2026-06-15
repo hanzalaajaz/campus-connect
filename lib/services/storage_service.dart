@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../utils/app_constants.dart';
 
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  FirebaseStorage get _storage => FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
 
   Future<File?> pickImage({bool fromCamera = false}) async {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/trip_model.dart';
+import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_routes.dart';
 
@@ -69,10 +71,18 @@ class TripCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Text(
+                            'Price',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textHint,
+                            ),
+                          ),
                           Text(
                             'PKR ${trip.price.toStringAsFixed(0)}',
                             style: const TextStyle(
@@ -81,17 +91,31 @@ class TripCard extends StatelessWidget {
                               color: AppColors.primary,
                             ),
                           ),
-                          Text(
-                            '${trip.availableSeats} seats left',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
                         ],
                       ),
-                      const Spacer(),
-                      ElevatedButton(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${trip.availableSeats} seats left',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (context.watch<AuthProvider>().user?.isAdmin != true)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
                         onPressed: canRegister ? onRegister : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isRegistered
@@ -106,8 +130,7 @@ class TripCard extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                         child: Text(
                           trip.isFull
@@ -120,8 +143,7 @@ class TripCard extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),

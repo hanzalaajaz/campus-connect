@@ -1,7 +1,9 @@
 import '../firebase_options.dart';
 
 class AppConstants {
-  static bool get isDemoMode => DefaultFirebaseOptions.android.apiKey == 'YOUR-ANDROID-API-KEY';
+  static bool _isDemoMode = DefaultFirebaseOptions.android.apiKey == 'YOUR-ANDROID-API-KEY';
+  static bool get isDemoMode => _isDemoMode;
+  static set isDemoMode(bool value) => _isDemoMode = value;
 
   static const String appName = 'CampusConnect';
   static const String universityName = 'COMSATS University Islamabad';

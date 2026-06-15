@@ -39,8 +39,18 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
     final authProvider = context.read<AuthProvider>();
+    if (authProvider.status == AuthStatus.initial) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    if (!mounted) return;
+
     if (authProvider.isAuthenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      if (authProvider.isAdmin) {
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }

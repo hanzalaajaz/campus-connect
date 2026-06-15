@@ -225,7 +225,7 @@ class TripDetailScreen extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 32),
-                  if (user != null)
+                  if (user != null && !user.isAdmin)
                     CustomButton(
                       text: trip.isFull
                           ? 'Trip Full'

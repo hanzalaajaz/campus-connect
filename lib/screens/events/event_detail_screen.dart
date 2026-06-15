@@ -158,7 +158,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 32),
-                  if (user != null)
+                  if (user != null && !authProvider.isAdmin)
                     CustomButton(
                       text: event.isFull
                           ? 'Event Full'

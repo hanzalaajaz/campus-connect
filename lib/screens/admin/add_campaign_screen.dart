@@ -1,33 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../models/event_model.dart';
+import '../../models/donation_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/event_provider.dart';
+import '../../providers/donation_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/custom_button.dart';
 import '../../services/storage_service.dart';
 
-class AddEventScreen extends StatefulWidget {
-  const AddEventScreen({super.key});
+class AddCampaignScreen extends StatefulWidget {
+  const AddCampaignScreen({super.key});
 
   @override
-  State<AddEventScreen> createState() => _AddEventScreenState();
+  State<AddCampaignScreen> createState() => _AddCampaignScreenState();
 }
 
-class _AddEventScreenState extends State<AddEventScreen> {
+class _AddCampaignScreenState extends State<AddCampaignScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  final _venueCtrl = TextEditingController();
-  final _timeCtrl = TextEditingController();
-  final _maxParticipantsCtrl = TextEditingController();
-  final _latCtrl = TextEditingController();
-  final _lngCtrl = TextEditingController();
+  final _goalCtrl = TextEditingController();
 
-  String _selectedCategory = AppConstants.eventCategories.first;
-  DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
+  String _selectedCategory = AppConstants.donationCategories.first;
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
   File? _imageFile;
   bool _isLoading = false;
 
@@ -35,11 +31,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
-    _venueCtrl.dispose();
-    _timeCtrl.dispose();
-    _maxParticipantsCtrl.dispose();
-    _latCtrl.dispose();
-    _lngCtrl.dispose();
+    _goalCtrl.dispose();
     super.dispose();
   }
 
@@ -63,29 +55,21 @@ class _AddEventScreenState extends State<AddEventScreen> {
     setState(() => _isLoading = true);
 
     final user = context.read<AuthProvider>().user;
-    final event = EventModel(
+    final campaign = DonationCampaignModel(
       id: '',
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
-      venue: _venueCtrl.text.trim(),
-      date: _selectedDate,
-      time: _timeCtrl.text.trim(),
       category: _selectedCategory,
-      latitude: _latCtrl.text.isEmpty
-          ? null
-          : double.tryParse(_latCtrl.text),
-      longitude: _lngCtrl.text.isEmpty
-          ? null
-          : double.tryParse(_lngCtrl.text),
-      maxParticipants: _maxParticipantsCtrl.text.isEmpty
-          ? null
-          : int.tryParse(_maxParticipantsCtrl.text),
+      goalAmount: double.parse(_goalCtrl.text.trim()),
+      raisedAmount: 0.0,
+      endDate: _selectedDate,
+      isActive: true,
       createdBy: user?.uid ?? '',
       createdAt: DateTime.now(),
     );
 
-    final success = await context.read<EventProvider>().addEvent(
-          event: event,
+    final success = await context.read<DonationProvider>().addCampaign(
+          campaign: campaign,
           imageFile: _imageFile,
         );
 
@@ -95,14 +79,14 @@ class _AddEventScreenState extends State<AddEventScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Event created successfully!'),
+            content: Text('Donation campaign created successfully!'),
             backgroundColor: AppColors.success,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to create event.'),
+            content: Text('Failed to create campaign.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -123,7 +107,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Add Event',
+        title: const Text('Add Donation Campaign',
             style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
@@ -144,8 +128,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: Colors.grey.shade200, width: 1.5),
+                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
                   ),
                   child: _imageFile != null
                       ? ClipRRect(
@@ -158,68 +141,32 @@ class _AddEventScreenState extends State<AddEventScreen> {
                             Icon(Icons.add_photo_alternate_outlined,
                                 size: 40, color: Colors.grey.shade400),
                             const SizedBox(height: 8),
-                            Text('Tap to add event image',
-                                style: TextStyle(
-                                    color: Colors.grey.shade400)),
+                            Text('Tap to add campaign banner',
+                                style: TextStyle(color: Colors.grey.shade400)),
                           ],
                         ),
                 ),
               ),
               const SizedBox(height: 16),
               _buildCard([
-                _field(_titleCtrl, 'Event Title', 'e.g. Sports Week 2026',
+                _field(_titleCtrl, 'Campaign Title', 'e.g. Flood Relief Drive 2026',
                     required: true),
                 const SizedBox(height: 14),
-                _field(_descCtrl, 'Description', 'Describe the event...',
+                _field(_descCtrl, 'Description', 'Describe the campaign...',
                     maxLines: 3, required: true),
                 const SizedBox(height: 14),
-                _field(_venueCtrl, 'Venue', 'e.g. COMSATS Sports Ground',
-                    required: true),
+                _field(_goalCtrl, 'Goal Amount (PKR)', 'e.g. 150000',
+                    required: true, keyboardType: TextInputType.number),
                 const SizedBox(height: 14),
                 _dropdownField(),
                 const SizedBox(height: 14),
                 _dateField(),
-                const SizedBox(height: 14),
-                _field(_timeCtrl, 'Time', 'e.g. 10:00 AM - 2:00 PM',
-                    required: true),
-                const SizedBox(height: 14),
-                _field(_maxParticipantsCtrl, 'Max Participants (optional)',
-                    'Leave empty for unlimited',
-                    keyboardType: TextInputType.number),
-              ]),
-              const SizedBox(height: 16),
-              _buildCard([
-                const Text(
-                  'Map Location (optional)',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Add GPS coordinates to show event location on map',
-                  style: TextStyle(
-                      fontSize: 12, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _field(_latCtrl, 'Latitude', '33.6844',
-                          keyboardType: TextInputType.number),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _field(_lngCtrl, 'Longitude', '73.0479',
-                          keyboardType: TextInputType.number),
-                    ),
-                  ],
-                ),
               ]),
               const SizedBox(height: 24),
               CustomButton(
-                text: 'Create Event',
+                text: 'Create Campaign',
                 isLoading: _isLoading,
+                color: AppColors.success,
                 onPressed: _submit,
               ),
               const SizedBox(height: 24),
@@ -271,8 +218,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
           maxLines: maxLines,
           keyboardType: keyboardType,
           validator: required
-              ? (v) =>
-                  v == null || v.isEmpty ? '$label is required' : null
+              ? (v) => v == null || v.isEmpty ? '$label is required' : null
               : null,
           decoration: InputDecoration(
             hintText: hint,
@@ -284,8 +230,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide:
-                  const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14, vertical: 12),
@@ -318,7 +263,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
             contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14, vertical: 12),
           ),
-          items: AppConstants.eventCategories
+          items: AppConstants.donationCategories
               .map((c) => DropdownMenuItem(value: c, child: Text(c)))
               .toList(),
         ),
@@ -330,7 +275,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Event Date',
+        const Text('End Date',
             style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
