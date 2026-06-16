@@ -32,6 +32,37 @@ class AdminDashboard extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Sign Out'),
+                  content: const Text('Are you sure you want to sign out?'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel')),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error),
+                      child: const Text('Sign Out'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true && context.mounted) {
+                await context.read<AuthProvider>().signOut();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+                }
+              }
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -181,6 +212,7 @@ class AdminDashboard extends StatelessWidget {
                     backgroundColor: AppColors.primary,
                     child: Icon(Icons.event, color: Colors.white, size: 18),
                   ),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.eventDetail, arguments: e),
                   title: Text(e.title,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                       maxLines: 1,
@@ -240,6 +272,7 @@ class AdminDashboard extends StatelessWidget {
                     child:
                         Icon(Icons.directions_bus, color: Colors.white, size: 18),
                   ),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.tripDetail, arguments: t),
                   title: Text(t.title,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                       maxLines: 1,
@@ -299,6 +332,7 @@ class AdminDashboard extends StatelessWidget {
                     backgroundColor: AppColors.success,
                     child: Icon(Icons.volunteer_activism, color: Colors.white, size: 18),
                   ),
+                  // onTap: () => Navigator.pushNamed(context, AppRoutes.donationDetail, arguments: c), // Add if route exists
                   title: Text(c.title,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                       maxLines: 1,

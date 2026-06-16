@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../models/donation_model.dart';
 import '../../providers/auth_provider.dart';
@@ -24,7 +26,7 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
 
   String _selectedCategory = AppConstants.donationCategories.first;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
-  File? _imageFile;
+  XFile? _imageFile;
   bool _isLoading = false;
 
   @override
@@ -133,7 +135,9 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                   child: _imageFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
+                          child: kIsWeb 
+                              ? Image.network(_imageFile!.path, fit: BoxFit.cover) 
+                              : Image.file(File(_imageFile!.path), fit: BoxFit.cover),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -136,16 +136,28 @@ class _EventList extends StatelessWidget {
           isRegistered: isRegistered,
           onRegister: () async {
             if (user == null) return;
+            bool success;
             if (isRegistered) {
-              await context
+              success = await context
                   .read<EventProvider>()
                   .unregisterFromEvent(event.id, user.uid);
             } else {
-              await context
+              success = await context
                   .read<EventProvider>()
                   .registerForEvent(event.id, user.uid);
             }
             await context.read<AuthProvider>().refreshUser();
+            
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(success 
+                    ? (isRegistered ? 'Successfully unregistered!' : 'Successfully registered for event!')
+                    : 'Failed to update registration.'),
+                  backgroundColor: success ? AppColors.success : AppColors.error,
+                ),
+              );
+            }
           },
         );
       },

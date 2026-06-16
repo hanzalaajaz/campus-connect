@@ -122,6 +122,35 @@ class _HomeTab extends StatelessWidget {
                 onPressed: () => Navigator.pushNamed(
                     context, AppRoutes.announcements),
               ),
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Sign Out'),
+                      content: const Text('Are you sure you want to sign out?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel')),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.error),
+                          child: const Text('Sign Out'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && context.mounted) {
+                    await context.read<AuthProvider>().signOut();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+                    }
+                  }
+                },
+              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -190,10 +219,25 @@ class _HomeTab extends StatelessWidget {
                           onRegister: () async {
                             if (user == null) return;
                             final ep = context.read<EventProvider>();
-                            await ep.registerForEvent(e.id, user.uid);
-                            await context
-                                .read<AuthProvider>()
-                                .refreshUser();
+                            final isReg = user.registeredEvents.contains(e.id);
+                            bool success;
+                            if (isReg) {
+                              success = await ep.unregisterFromEvent(e.id, user.uid);
+                            } else {
+                              success = await ep.registerForEvent(e.id, user.uid);
+                            }
+                            await context.read<AuthProvider>().refreshUser();
+                            
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(success 
+                                    ? (isReg ? 'Successfully unregistered!' : 'Successfully registered for event!')
+                                    : 'Failed to update registration.'),
+                                  backgroundColor: success ? AppColors.success : AppColors.error,
+                                ),
+                              );
+                            }
                           },
                         ),
                       ),

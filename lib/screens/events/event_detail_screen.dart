@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '../../widgets/app_image.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -14,6 +14,15 @@ class EventDetailScreen extends StatelessWidget {
   final EventModel event;
 
   const EventDetailScreen({super.key, required this.event});
+
+  Widget _placeholderImage() {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      child: const Center(
+        child: Icon(Icons.event, size: 80, color: Colors.white30),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,23 +42,14 @@ class EventDetailScreen extends StatelessWidget {
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               background: event.imageUrl != null
-                  ? CachedNetworkImage(
+                  ? AppImage(
                       imageUrl: event.imageUrl!,
+                      width: double.infinity,
+                      height: double.infinity,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                          color: AppColors.primary.withOpacity(0.3)),
-                      errorWidget: (_, __, ___) => Container(
-                          color: AppColors.primary.withOpacity(0.3),
-                          child: const Icon(Icons.event,
-                              size: 80, color: Colors.white30)),
+                      errorWidget: (_, __, ___) => _placeholderImage(),
                     )
-                  : Container(
-                      decoration:
-                          const BoxDecoration(gradient: AppColors.primaryGradient),
-                      child: const Center(
-                        child: Icon(Icons.event, size: 80, color: Colors.white30),
-                      ),
-                    ),
+                  : _placeholderImage(),
             ),
           ),
           SliverToBoxAdapter(

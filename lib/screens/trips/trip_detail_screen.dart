@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '../../widgets/app_image.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -14,6 +14,15 @@ class TripDetailScreen extends StatelessWidget {
   final TripModel trip;
 
   const TripDetailScreen({super.key, required this.trip});
+
+  Widget _placeholderImage() {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.accentGradient),
+      child: const Center(
+        child: Icon(Icons.directions_bus, size: 80, color: Colors.white30),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,18 +43,14 @@ class TripDetailScreen extends StatelessWidget {
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               background: trip.imageUrl != null
-                  ? CachedNetworkImage(
+                  ? AppImage(
                       imageUrl: trip.imageUrl!,
+                      width: double.infinity,
+                      height: double.infinity,
                       fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => _placeholderImage(),
                     )
-                  : Container(
-                      decoration: const BoxDecoration(
-                          gradient: AppColors.accentGradient),
-                      child: const Center(
-                        child: Icon(Icons.directions_bus,
-                            size: 80, color: Colors.white30),
-                      ),
-                    ),
+                  : _placeholderImage(),
             ),
           ),
           SliverToBoxAdapter(

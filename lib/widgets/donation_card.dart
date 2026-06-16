@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'app_image.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../models/donation_model.dart';
 import '../utils/app_colors.dart';
@@ -171,13 +171,15 @@ class DonationCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: campaign.imageUrl != null
-          ? CachedNetworkImage(
+          ? AppImage(
               imageUrl: campaign.imageUrl!,
               height: 140,
               width: double.infinity,
               fit: BoxFit.cover,
-              placeholder: (_, __) =>
-                  Container(height: 140, color: Colors.grey.shade200),
+              placeholder: (_, __) => Container(
+                height: 140,
+                color: Colors.grey.shade200,
+              ),
               errorWidget: (_, __, ___) => _placeholder(),
             )
           : _placeholder(),

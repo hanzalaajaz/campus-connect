@@ -17,10 +17,9 @@ class FirestoreService {
     }
     return _db
         .collection(AppConstants.eventsCollection)
-        .where('isActive', isEqualTo: true)
         .orderBy('date', descending: false)
         .snapshots()
-        .map((s) => s.docs.map(EventModel.fromFirestore).toList());
+        .map((s) => s.docs.map(EventModel.fromFirestore).where((e) => e.isActive).toList());
   }
 
   Future<String> addEvent(EventModel event) async {
@@ -100,10 +99,9 @@ class FirestoreService {
     }
     return _db
         .collection(AppConstants.tripsCollection)
-        .where('isActive', isEqualTo: true)
         .orderBy('departureDate', descending: false)
         .snapshots()
-        .map((s) => s.docs.map(TripModel.fromFirestore).toList());
+        .map((s) => s.docs.map(TripModel.fromFirestore).where((t) => t.isActive).toList());
   }
 
   Future<String> addTrip(TripModel trip) async {
@@ -177,10 +175,9 @@ class FirestoreService {
     }
     return _db
         .collection(AppConstants.donationsCollection)
-        .where('isActive', isEqualTo: true)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((s) => s.docs.map(DonationCampaignModel.fromFirestore).toList());
+        .map((s) => s.docs.map(DonationCampaignModel.fromFirestore).where((c) => c.isActive).toList());
   }
 
   Future<String> addDonationCampaign(DonationCampaignModel campaign) async {

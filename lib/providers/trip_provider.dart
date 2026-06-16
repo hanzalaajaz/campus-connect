@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/trip_model.dart';
 import '../services/firestore_service.dart';
 import '../services/storage_service.dart';
@@ -32,7 +33,7 @@ class TripProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> addTrip({required TripModel trip, File? imageFile}) async {
+  Future<bool> addTrip({required TripModel trip, XFile? imageFile}) async {
     _isLoading = true;
     notifyListeners();
     try {

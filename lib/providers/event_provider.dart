@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/event_model.dart';
 import '../services/firestore_service.dart';
 import '../services/storage_service.dart';
@@ -36,7 +37,7 @@ class EventProvider extends ChangeNotifier {
     final now = DateTime.now();
     return _events
         .where((e) => e.date.isAfter(now))
-        .take(5)
+        .take(10)
         .toList();
   }
 
@@ -65,7 +66,7 @@ class EventProvider extends ChangeNotifier {
 
   Future<bool> addEvent({
     required EventModel event,
-    File? imageFile,
+    XFile? imageFile,
   }) async {
     _isLoading = true;
     notifyListeners();

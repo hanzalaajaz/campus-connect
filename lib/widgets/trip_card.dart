@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'app_image.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/trip_model.dart';
@@ -157,13 +157,15 @@ class TripCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: trip.imageUrl != null
-          ? CachedNetworkImage(
+          ? AppImage(
               imageUrl: trip.imageUrl!,
-              height: 160,
+              height: 140,
               width: double.infinity,
               fit: BoxFit.cover,
-              placeholder: (_, __) =>
-                  Container(height: 160, color: Colors.grey.shade200),
+              placeholder: (_, __) => Container(
+                height: 140,
+                color: Colors.grey.shade200,
+              ),
               errorWidget: (_, __, ___) => _placeholderImage(),
             )
           : _placeholderImage(),

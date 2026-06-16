@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../models/event_model.dart';
 import '../../providers/auth_provider.dart';
@@ -28,7 +30,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
 
   String _selectedCategory = AppConstants.eventCategories.first;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
-  File? _imageFile;
+  XFile? _imageFile;
   bool _isLoading = false;
 
   @override
@@ -150,7 +152,9 @@ class _AddEventScreenState extends State<AddEventScreen> {
                   child: _imageFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
+                          child: kIsWeb 
+                              ? Image.network(_imageFile!.path, fit: BoxFit.cover) 
+                              : Image.file(File(_imageFile!.path), fit: BoxFit.cover),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,

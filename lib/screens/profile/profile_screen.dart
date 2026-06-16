@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../models/user_model.dart';
+import '../../widgets/app_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/trip_provider.dart';
@@ -67,7 +70,7 @@ class ProfileScreen extends StatelessWidget {
                       radius: 44,
                       backgroundColor: Colors.white,
                       backgroundImage: user.photoUrl != null
-                          ? NetworkImage(user.photoUrl!)
+                          ? AppImage.provider(user.photoUrl!)
                           : null,
                       child: user.photoUrl == null
                           ? Text(
@@ -294,8 +297,8 @@ class ProfileScreen extends StatelessWidget {
                           if (confirm == true && context.mounted) {
                             await context.read<AuthProvider>().signOut();
                             if (context.mounted) {
-                              Navigator.pushReplacementNamed(
-                                  context, AppRoutes.login);
+                              Navigator.pushNamedAndRemoveUntil(
+                                  context, AppRoutes.login, (route) => false);
                             }
                           }
                         },

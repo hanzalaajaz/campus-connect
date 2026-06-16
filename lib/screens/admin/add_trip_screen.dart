@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../models/trip_model.dart';
 import '../../providers/auth_provider.dart';
@@ -29,7 +31,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
   DateTime _departureDate = DateTime.now().add(const Duration(days: 14));
   DateTime _returnDate = DateTime.now().add(const Duration(days: 17));
   DateTime _deadline = DateTime.now().add(const Duration(days: 10));
-  File? _imageFile;
+  XFile? _imageFile;
   bool _isLoading = false;
 
   @override
@@ -156,7 +158,9 @@ class _AddTripScreenState extends State<AddTripScreen> {
                   child: _imageFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
+                          child: kIsWeb 
+                              ? Image.network(_imageFile!.path, fit: BoxFit.cover) 
+                              : Image.file(File(_imageFile!.path), fit: BoxFit.cover),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,

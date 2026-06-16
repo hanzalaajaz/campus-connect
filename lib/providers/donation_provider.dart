@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../models/donation_model.dart';
 import '../services/firestore_service.dart';
 import '../services/storage_service.dart';
@@ -63,7 +63,7 @@ class DonationProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> addCampaign({required DonationCampaignModel campaign, File? imageFile}) async {
+  Future<bool> addCampaign({required DonationCampaignModel campaign, XFile? imageFile}) async {
     _isLoading = true;
     notifyListeners();
     try {
